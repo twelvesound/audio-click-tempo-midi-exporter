@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        margin: 0;
+        padding: 18px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 13px;
+        color: #202020;
+        background: #f2f2f2;
+      }
+
+      form {
+        display: grid;
+        gap: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 5px;
+        font-weight: 600;
+      }
+
+      input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 7px 8px;
+        border: 1px solid #aaa;
+        border-radius: 4px;
+        font: inherit;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      button {
+        justify-self: end;
+        padding: 7px 12px;
+        border: 1px solid #777;
+        border-radius: 4px;
+        background: #e6e6e6;
+        font: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      function doSendMessage(message) {
+        if (window.webkit) {
+          window.webkit.messageHandlers.live.postMessage(message);
+        } else {
+          window.chrome.webview.postMessage(message);
+        }
+      }
+
+      function closeWithResult(result) {
+        doSendMessage({ method: "close_and_send", params: [JSON.stringify(result)] });
+      }
+    </script>
+    <form id="form">
+      <label>
+        Clicks per beat
+        <input id="clicksPerBeat" type="number" min="1" step="1" value="4" />
+      </label>
+      <div class="row">
+        <label>
+          Min BPM
+          <input id="minBpm" type="number" min="1" step="1" value="40" />
+        </label>
+        <label>
+          Max BPM
+          <input id="maxBpm" type="number" min="1" step="1" value="260" />
+        </label>
+      </div>
+      <label>
+        Peak threshold ratio
+        <input id="sensitivity" type="number" min="0.05" max="1" step="0.05" value="0.25" />
+      </label>
+      <button type="submit">Analyze</button>
+    </form>
+    <script>
+      document.getElementById("form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const value = (id) => Number(document.getElementById(id).value);
+        closeWithResult({
+          clicksPerBeat: value("clicksPerBeat"),
+          minBpm: value("minBpm"),
+          maxBpm: value("maxBpm"),
+          sensitivity: value("sensitivity")
+        });
+      });
+    </script>
+  </body>
+</html>
