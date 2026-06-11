@@ -121,7 +121,6 @@
           sensitivity: Number(document.getElementById("sensitivity").value),
           tempoSmoothing: Number(document.getElementById("tempoSmoothing").value),
           tempoChangeThreshold: Number(document.getElementById("tempoChangeThreshold").value),
-          copyToProject: document.getElementById("copyToProject").checked,
         };
         closeWithResult(JSON.stringify(result));
       }
@@ -146,7 +145,6 @@
             var value = String(DEFAULTS.tempoSmoothing);
             smoothing.value = allowed.indexOf(value) >= 0 ? value : "1";
           }
-          document.getElementById("copyToProject").checked = Boolean(DEFAULTS.copyToProject);
         }
 
         document.getElementById("form").addEventListener("submit", function (event) {
@@ -195,10 +193,6 @@
           <input id="tempoChangeThreshold" type="number" min="0" step="0.001" value="0.01" />
         </label>
       </div>
-      <label class="check">
-        <input id="copyToProject" type="checkbox" />
-        Copy exported files into the Live project
-      </label>
       <div class="buttons">
         <button type="button" class="secondary" onclick="cancelDialog()">Cancel</button>
         <button type="submit" class="primary">Export</button>

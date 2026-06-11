@@ -38,8 +38,6 @@ type Settings = {
   tempoSmoothing: number;
   /** Minimum BPM difference required to emit a new tempo event. */
   tempoChangeThreshold: number;
-  /** Copy the exported files into the Live project folder. */
-  copyToProject: boolean;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -49,7 +47,6 @@ const DEFAULT_SETTINGS: Settings = {
   sensitivity: 0.25,
   tempoSmoothing: 1,
   tempoChangeThreshold: 0.01,
-  copyToProject: false,
 };
 
 type WavInfo = {
@@ -168,7 +165,6 @@ function parseSettings(result: string): Settings | null {
     tempoChangeThreshold: Number(
       parsed.tempoChangeThreshold ?? DEFAULT_SETTINGS.tempoChangeThreshold,
     ),
-    copyToProject: Boolean(parsed.copyToProject ?? DEFAULT_SETTINGS.copyToProject),
   };
 
   if (!Number.isFinite(settings.clicksPerBeat) || settings.clicksPerBeat < 1) {
@@ -943,8 +939,6 @@ function isAbortError(error: unknown): boolean {
 type ExportResult = {
   midiPath: string;
   analysisPath: string;
-  projectMidiPath?: string;
-  projectAnalysisPath?: string;
   clickAnalysis: ClickAnalysis;
   tracks: MidiTrackData[];
   warnings: string[];
@@ -1067,21 +1061,6 @@ export function activate(activation: ActivationContext) {
             warnings: [...clickAnalysis.warnings],
           };
 
-          if (settings.copyToProject) {
-            await update("Copying into the Live project...", 92);
-            try {
-              exportResult.projectMidiPath = await context.resources.importIntoProject(midiPath);
-              exportResult.projectAnalysisPath =
-                await context.resources.importIntoProject(analysisPath);
-            } catch (error) {
-              exportResult.warnings.push(
-                `Could not copy the export into the Live project: ${
-                  error instanceof Error ? error.message : String(error)
-                }`,
-              );
-            }
-          }
-
           await update("Done", 100);
           return exportResult;
         },
@@ -1094,9 +1073,6 @@ export function activate(activation: ActivationContext) {
           `${result.clickAnalysis.timeSignatureEvents.length} time signature event(s), ` +
           `BPM ${Math.min(...bpms).toFixed(3)}-${Math.max(...bpms).toFixed(3)}).`,
       );
-      if (result.projectMidiPath) {
-        console.log(`Copied into the Live project: ${result.projectMidiPath}`);
-      }
       if (result.clickAnalysis.meter.detected) {
         console.log(
           `Detected meter: ${result.clickAnalysis.meter.beatsPerBar}/4 ` +
@@ -1113,7 +1089,7 @@ export function activate(activation: ActivationContext) {
         await showErrorDialog(
           context,
           `Export finished with warnings:\n\n- ${result.warnings.join("\n- ")}\n\n` +
-            `MIDI file: ${result.projectMidiPath ?? result.midiPath}`,
+            `MIDI file: ${result.midiPath}`,
           "Audio Click Tempo MIDI Exporter \u2014 exported with warnings",
         );
       }

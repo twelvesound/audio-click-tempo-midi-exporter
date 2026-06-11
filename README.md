@@ -21,7 +21,6 @@ Ableton Live Extension that exports Arrangement MIDI clips as a multitrack Stand
 - Expands looping MIDI clips across their visible Arrangement duration.
 - Skips muted tracks, tracks muted via solo, muted clips, and muted notes.
 - Writes a sidecar JSON analysis file (including all detected onsets and warnings) next to the MIDI export.
-- Optionally copies the exported files into the current Live project folder.
 
 ## Use
 
@@ -46,11 +45,10 @@ Settings are remembered between runs.
 - **Peak threshold ratio** - lower values detect quieter clicks.
 - **Tempo smoothing** - optional moving-median over the per-click BPM values (3/5/7 clicks). Reduces tempo event spam caused by render jitter, at the cost of exact per-click timing. `Off` keeps the raw per-click tempo map, which exactly matches the audio duration.
 - **Tempo change threshold** - minimum BPM difference required to emit a new tempo event (default `0.01`).
-- **Copy exported files into the Live project** - additionally copies the `.mid` and `.json` files into the current Live project folder via `importIntoProject()`.
 
-By default the MIDI file is written to Ableton Live's Extension storage directory. The exact path is shown in Live's Extension log after export. A sidecar `.json` file is written to the same folder for checking the detected tempo and meter data, including the raw onset list and any warnings.
+The MIDI file is written to Ableton Live's Extension storage directory. On macOS this is usually under `~/Library/Application Support/Ableton/Extensions Data/audio-click-tempo-midi-exporter/`. The exact path is shown in Live's Extension log after export. A sidecar `.json` file is written to the same folder for checking the detected tempo and meter data, including the raw onset list and any warnings.
 
-If the export finishes with warnings (interpolated or skipped clicks, project copy failure), a dialog summarizes them. Errors are also shown in a dialog instead of only being logged.
+If the export finishes with warnings (interpolated or skipped clicks), a dialog summarizes them. Errors are also shown in a dialog instead of only being logged.
 
 ## Current Limitations
 
@@ -97,7 +95,7 @@ npm run package
 - Cancelling the settings dialog now aborts cleanly instead of logging a JSON parse error.
 - Optional tempo smoothing (moving median) and configurable tempo change threshold.
 - Settings are persisted between runs.
-- Optional copy of the exported files into the Live project folder.
+- Removed the unsupported Live project folder copy option; exported files remain in the Extension storage directory.
 - Note release velocities are exported; MIDI channel 10 (GM drums) is skipped when assigning channels.
 - Settings dialog restyled to match Ableton's dark theme; added a Cancel button.
 - Analysis JSON now includes the extension version, warnings, and the full onset list (time, strength, downbeat score, virtual flag).
