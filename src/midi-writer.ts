@@ -3,6 +3,8 @@ export type MidiNoteEvent = {
   startBeat: number;
   durationBeats: number;
   velocity: number;
+  /** MIDI note-off (release) velocity. Defaults to 64 when not provided. */
+  offVelocity?: number;
 };
 
 export type MidiTrackData = {
@@ -157,6 +159,14 @@ function normalizeVelocity(value: number | undefined) {
   return value <= 1 ? clampMidiByte(value * 127, 100) : clampMidiByte(value, 100);
 }
 
+function normalizeOffVelocity(value: number | undefined) {
+  if (value === undefined) {
+    return 64;
+  }
+
+  return value <= 1 ? clampMidiByte(value * 127, 64) : clampMidiByte(value, 64);
+}
+
 function makeMusicTrack(track: MidiTrackData) {
   const channel = Math.max(0, Math.min(15, track.channel));
   const events: TimedBytes[] = [{ tick: 0, order: 0, bytes: textMeta(0x03, track.name) }];
@@ -166,6 +176,7 @@ function makeMusicTrack(track: MidiTrackData) {
     const endTick = Math.max(startTick + 1, ticks(note.startBeat + note.durationBeats));
     const pitch = clampMidiByte(note.pitch, 60);
     const velocity = normalizeVelocity(note.velocity);
+    const offVelocity = normalizeOffVelocity(note.offVelocity);
 
     events.push({
       tick: startTick,
@@ -175,7 +186,7 @@ function makeMusicTrack(track: MidiTrackData) {
     events.push({
       tick: endTick,
       order: 1,
-      bytes: [0x80 | channel, pitch, 0],
+      bytes: [0x80 | channel, pitch, offVelocity],
     });
   });
 

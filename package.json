@@ -1,6 +1,6 @@
 {
   "name": "audio-click-tempo-midi-exporter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "main": "dist/extension.js",
   "scripts": {
@@ -10,10 +10,10 @@
     "start": "tsx build.ts && extensions-cli run"
   },
   "dependencies": {
-    "@ableton-extensions/sdk": "file:../../work/sdk/ableton-extensions-sdk-1.0.0-beta.0.tgz"
+    "@ableton-extensions/sdk": "file:../extensions-sdk/ableton-extensions-sdk-1.0.0-beta.0.tgz"
   },
   "devDependencies": {
-    "@ableton-extensions/cli": "file:../../work/sdk/ableton-extensions-cli-1.0.0-beta.0.tgz",
+    "@ableton-extensions/cli": "file:../extensions-sdk/ableton-extensions-cli-1.0.0-beta.0.tgz",
     "esbuild": "0.28.0",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3"

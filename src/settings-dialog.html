@@ -3,32 +3,50 @@
   <head>
     <meta charset="utf-8" />
     <style>
+      :root {
+        --ableton-bg: #383838;
+        --ableton-panel: #4e4e4e;
+        --ableton-button: #ffa500;
+        --ableton-text: #ffffff;
+        --ableton-border: #2c2c2c;
+        --ableton-input-bg: #2c2c2c;
+      }
+
       body {
         margin: 0;
-        padding: 18px;
+        padding: 16px;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         font-size: 13px;
-        color: #202020;
-        background: #f2f2f2;
+        color: var(--ableton-text);
+        background: var(--ableton-panel);
       }
 
       form {
         display: grid;
-        gap: 12px;
+        gap: 11px;
       }
 
       label {
         display: grid;
-        gap: 5px;
+        gap: 4px;
         font-weight: 600;
       }
 
-      input {
+      .hint {
+        font-weight: 400;
+        font-size: 11px;
+        opacity: 0.65;
+      }
+
+      input[type="number"],
+      select {
         box-sizing: border-box;
         width: 100%;
-        padding: 7px 8px;
-        border: 1px solid #aaa;
-        border-radius: 4px;
+        padding: 6px 8px;
+        border: 1px solid var(--ableton-border);
+        border-radius: 3px;
+        background: var(--ableton-input-bg);
+        color: var(--ableton-text);
         font: inherit;
       }
 
@@ -38,33 +56,111 @@
         gap: 10px;
       }
 
+      .check {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-weight: 600;
+      }
+
+      .check input {
+        margin: 0;
+      }
+
+      .buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
       button {
-        justify-self: end;
-        padding: 7px 12px;
-        border: 1px solid #777;
-        border-radius: 4px;
-        background: #e6e6e6;
+        padding: 7px 16px;
+        border: none;
+        border-radius: 3px;
         font: inherit;
+        cursor: pointer;
+      }
+
+      button.primary {
+        background: var(--ableton-button);
+        color: #000;
+        font-weight: 700;
+      }
+
+      button.secondary {
+        background: var(--ableton-bg);
+        color: var(--ableton-text);
+        border: 1px solid var(--ableton-border);
       }
     </style>
-  </head>
-  <body>
     <script>
+      var DEFAULTS = "__DEFAULTS_JSON__";
+
       function doSendMessage(message) {
-        if (window.webkit) {
+        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.live) {
           window.webkit.messageHandlers.live.postMessage(message);
-        } else {
+        } else if (window.chrome && window.chrome.webview) {
           window.chrome.webview.postMessage(message);
         }
       }
 
       function closeWithResult(result) {
-        doSendMessage({ method: "close_and_send", params: [JSON.stringify(result)] });
+        doSendMessage({ method: "close_and_send", params: [result] });
       }
+
+      function cancelDialog() {
+        closeWithResult("");
+      }
+
+      function submitDialog() {
+        var result = {
+          clicksPerBeat: Number(document.getElementById("clicksPerBeat").value),
+          minBpm: Number(document.getElementById("minBpm").value),
+          maxBpm: Number(document.getElementById("maxBpm").value),
+          sensitivity: Number(document.getElementById("sensitivity").value),
+          tempoSmoothing: Number(document.getElementById("tempoSmoothing").value),
+          tempoChangeThreshold: Number(document.getElementById("tempoChangeThreshold").value),
+          copyToProject: document.getElementById("copyToProject").checked,
+        };
+        closeWithResult(JSON.stringify(result));
+      }
+
+      window.addEventListener("DOMContentLoaded", function () {
+        if (DEFAULTS && typeof DEFAULTS === "object") {
+          var numericFields = [
+            "clicksPerBeat",
+            "minBpm",
+            "maxBpm",
+            "sensitivity",
+            "tempoChangeThreshold",
+          ];
+          numericFields.forEach(function (field) {
+            if (typeof DEFAULTS[field] === "number" && isFinite(DEFAULTS[field])) {
+              document.getElementById(field).value = DEFAULTS[field];
+            }
+          });
+          var smoothing = document.getElementById("tempoSmoothing");
+          if (typeof DEFAULTS.tempoSmoothing === "number") {
+            var allowed = ["1", "3", "5", "7"];
+            var value = String(DEFAULTS.tempoSmoothing);
+            smoothing.value = allowed.indexOf(value) >= 0 ? value : "1";
+          }
+          document.getElementById("copyToProject").checked = Boolean(DEFAULTS.copyToProject);
+        }
+
+        document.getElementById("form").addEventListener("submit", function (event) {
+          event.preventDefault();
+          submitDialog();
+        });
+      });
     </script>
+  </head>
+  <body>
     <form id="form">
       <label>
         Clicks per beat
+        <span class="hint">4 = sixteenth-note clicks</span>
         <input id="clicksPerBeat" type="number" min="1" step="1" value="4" />
       </label>
       <div class="row">
@@ -79,21 +175,34 @@
       </div>
       <label>
         Peak threshold ratio
-        <input id="sensitivity" type="number" min="0.05" max="1" step="0.05" value="0.25" />
+        <span class="hint">Lower detects quieter clicks</span>
+        <input id="sensitivity" type="number" min="0.01" max="1" step="0.01" value="0.25" />
       </label>
-      <button type="submit">Analyze</button>
+      <div class="row">
+        <label>
+          Tempo smoothing
+          <span class="hint">Median window in clicks</span>
+          <select id="tempoSmoothing">
+            <option value="1" selected>Off</option>
+            <option value="3">3 clicks</option>
+            <option value="5">5 clicks</option>
+            <option value="7">7 clicks</option>
+          </select>
+        </label>
+        <label>
+          Tempo change threshold
+          <span class="hint">Min BPM change to emit event</span>
+          <input id="tempoChangeThreshold" type="number" min="0" step="0.001" value="0.01" />
+        </label>
+      </div>
+      <label class="check">
+        <input id="copyToProject" type="checkbox" />
+        Copy exported files into the Live project
+      </label>
+      <div class="buttons">
+        <button type="button" class="secondary" onclick="cancelDialog()">Cancel</button>
+        <button type="submit" class="primary">Export</button>
+      </div>
     </form>
-    <script>
-      document.getElementById("form").addEventListener("submit", (event) => {
-        event.preventDefault();
-        const value = (id) => Number(document.getElementById(id).value);
-        closeWithResult({
-          clicksPerBeat: value("clicksPerBeat"),
-          minBpm: value("minBpm"),
-          maxBpm: value("maxBpm"),
-          sensitivity: value("sensitivity")
-        });
-      });
-    </script>
   </body>
 </html>
