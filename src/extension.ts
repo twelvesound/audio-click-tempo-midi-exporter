@@ -21,7 +21,7 @@ import {
 } from "./midi-writer.js";
 import settingsDialog from "./settings-dialog.html";
 
-const EXTENSION_VERSION = "0.2.0";
+const EXTENSION_VERSION = "0.2.1";
 const API_VERSION = "1.0.0";
 const COMMAND_ID = "audio-click-tempo-midi-exporter.export";
 const MENU_TITLE = "Export MIDI From Audio Click Tempo";

@@ -87,6 +87,10 @@ npm run package
 
 ## Changelog
 
+### 0.2.1
+
+- Removed the unsupported Live project folder copy option; exported files remain in the Extension storage directory.
+
 ### 0.2.0
 
 - Click detection gaps are now interpolated instead of silently shifting the whole tempo/meter map; every interpolation and skipped interval is reported as a warning (dialog, log, and analysis JSON).
@@ -95,7 +99,6 @@ npm run package
 - Cancelling the settings dialog now aborts cleanly instead of logging a JSON parse error.
 - Optional tempo smoothing (moving median) and configurable tempo change threshold.
 - Settings are persisted between runs.
-- Removed the unsupported Live project folder copy option; exported files remain in the Extension storage directory.
 - Note release velocities are exported; MIDI channel 10 (GM drums) is skipped when assigning channels.
 - Settings dialog restyled to match Ableton's dark theme; added a Cancel button.
 - Analysis JSON now includes the extension version, warnings, and the full onset list (time, strength, downbeat score, virtual flag).
